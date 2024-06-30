@@ -25,7 +25,7 @@ extension Downloader: URLSessionDataDelegate {
         delegate?.download(self, didReceiveData: data, progress: progress)
         progressHandler?(data, progress)
     }
-    
+
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         os_log("%@ - %d", log: Downloader.logger, type: .debug, #function, #line)
 

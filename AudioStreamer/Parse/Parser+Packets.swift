@@ -6,20 +6,20 @@
 //  Copyright © 2018 Ausome Apps LLC. All rights reserved.
 //
 
-import Foundation
 import AVFoundation
+import Foundation
 import os.log
 
 func ParserPacketCallback(_ context: UnsafeMutableRawPointer, _ byteCount: UInt32, _ packetCount: UInt32, _ data: UnsafeRawPointer, _ packetDescriptions: UnsafeMutablePointer<AudioStreamPacketDescription>?) {
     let parser = Unmanaged<Parser>.fromOpaque(context).takeUnretainedValue()
     let isCompressed = packetDescriptions != nil
     os_log("%@ - %d [bytes: %i, packets: %i, compressed: %@]", log: Parser.loggerPacketCallback, type: .debug, #function, #line, byteCount, packetCount, "\(isCompressed)")
-    
+
     /// At this point we should definitely have a data format
     guard let dataFormat = parser.dataFormat else {
         return
     }
-    
+
     /// Iterate through the packets and store the data appropriately
     if let packetDescriptions = packetDescriptions {
         for i in 0 ..< Int(packetCount) {
