@@ -39,11 +39,13 @@ public protocol StreamingDelegate: class {
     ///   - streamer: The current `Streaming` instance
     ///   - currentTime: A `TimeInterval` representing the new current time value.
     func streamer(_ streamer: Streaming, updatedCurrentTime currentTime: TimeInterval)
+}
 
-    /// Triggered when the duration is updated.
-    ///
-    /// - Parameters:
-    ///   - streamer: The current `Streaming` instance
-    ///   - duration: A `TimeInterval` representing the new duration value.
-    func streamer(_ streamer: Streaming, updatedDuration duration: TimeInterval)
+// MARK: - Making methods optional
+
+extension StreamingDelegate {
+    func streamer(_ streamer: Streaming, failedDownloadWithError error: Error, forURL url: URL) {}
+    func streamer(_ streamer: Streaming, updatedDownloadProgress progress: Float, forURL url: URL) {}
+    func streamer(_ streamer: Streaming, changedState state: StreamingState) {}
+    func streamer(_ streamer: Streaming, updatedCurrentTime currentTime: TimeInterval) {}
 }

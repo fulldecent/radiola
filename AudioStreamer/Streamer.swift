@@ -26,7 +26,7 @@ open class Streamer: Streaming {
     }
 
     public var delegate: StreamingDelegate?
-    public internal(set) var duration: TimeInterval?
+
     public lazy var downloader: Downloading = {
         let downloader = Downloader()
         downloader.delegate = self
@@ -104,7 +104,6 @@ open class Streamer: Streaming {
             }
 
             self?.scheduleNextBuffer()
-            self?.handleTimeUpdate()
             self?.notifyTimeUpdated()
         }
         RunLoop.current.add(timer, forMode: .common)
@@ -127,7 +126,6 @@ open class Streamer: Streaming {
 
         // Reset the playback state
         stop()
-        duration = nil
         reader = nil
         isFileSchedulingComplete = false
 
@@ -283,39 +281,6 @@ open class Streamer: Streaming {
         }
     }
 
-    // MARK: - Handling Time Updates
-
-    /// Handles the duration value, explicitly checking if the duration is greater than the current value. For indeterminate streams we can accurately estimate the duration using the number of packets parsed and multiplying that by the number of frames per packet.
-    func handleDurationUpdate() {
-        if let newDuration = parser?.duration {
-            // Check if the duration is either nil or if it is greater than the previous duration
-            var shouldUpdate = false
-            if duration == nil {
-                shouldUpdate = true
-            } else if let oldDuration = duration, oldDuration < newDuration {
-                shouldUpdate = true
-            }
-
-            // Update the duration value
-            if shouldUpdate {
-                duration = newDuration
-                notifyDurationUpdate(newDuration)
-            }
-        }
-    }
-
-    /// Handles the current time relative to the duration to make sure current time does not exceed the duration
-    func handleTimeUpdate() {
-        guard let currentTime = currentTime, let duration = duration else {
-            return
-        }
-
-        if currentTime >= duration {
-            try? seek(to: 0)
-            pause()
-        }
-    }
-
     // MARK: - Notifying The Delegate
 
     func notifyDownloadProgress(_ progress: Float) {
@@ -324,14 +289,6 @@ open class Streamer: Streaming {
         }
 
         delegate?.streamer(self, updatedDownloadProgress: progress, forURL: url)
-    }
-
-    func notifyDurationUpdate(_ duration: TimeInterval) {
-        guard let _ = url else {
-            return
-        }
-
-        delegate?.streamer(self, updatedDuration: duration)
     }
 
     func notifyTimeUpdated() {

@@ -18,3 +18,13 @@ public enum StreamingState: String {
     case paused
     case playing
 }
+
+extension StreamingState {
+    var description: String {
+        switch self {
+            case .stopped: return "stopped"
+            case .paused: return "paused"
+            case .playing: return "playing"
+        }
+    }
+}

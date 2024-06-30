@@ -54,9 +54,6 @@ extension Streamer: DownloadingDelegate {
 
             // Notify the delegate of the new progress value of the download
             self?.notifyDownloadProgress(progress)
-
-            // Check if we have the duration
-            self?.handleDurationUpdate()
         }
     }
 }
