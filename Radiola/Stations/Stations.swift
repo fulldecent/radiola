@@ -5,9 +5,11 @@
 //  Created by Aleksandr Sokolov on 01.12.2023.
 //
 
-import Foundation
+import Cocoa
 
 // MARK: - StationItem
+
+let StationItemPasteboardType = NSPasteboard.PasteboardType(rawValue: "Station.row")
 
 protocol StationItem: AnyObject {
     var id: UUID { get }
@@ -23,6 +25,17 @@ protocol Station: StationItem {
     var isFavorite: Bool { get set }
 }
 
+extension Station {
+    /* ****************************************
+     *
+     * ****************************************/
+    func fill(from: Station) {
+        title = from.title
+        url = from.url
+        isFavorite = from.isFavorite
+    }
+}
+
 // MARK: - StationGroup
 
 protocol StationGroup: StationItem {
@@ -32,6 +45,13 @@ protocol StationGroup: StationItem {
 }
 
 extension StationGroup {
+    /* ****************************************
+     *
+     * ****************************************/
+    func fill(from: StationGroup) {
+        title = from.title
+    }
+
     /* ****************************************
      *
      * ****************************************/

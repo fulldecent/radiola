@@ -5,6 +5,7 @@
 //  Created by Aleksandr Sokolov on 01.12.2023.
 //
 
+import CoreData
 import Foundation
 
 fileprivate class DefaultStation: Station {
@@ -51,9 +52,9 @@ class AppState: ObservableObject {
     @Published var localStations: [any StationList] = []
 
     @Published var internetStations: [InternetStationList] = [
-        InternetStationList(title: "By tag", icon: "globe", help: nil, provider: RadioBrowserProvider(.byTag)),
-        InternetStationList(title: "By name", icon: "globe", help: nil, provider: RadioBrowserProvider(.byName)),
-        InternetStationList(title: "By country", icon: "globe", help: nil, provider: RadioBrowserProvider(.byCountry)),
+        InternetStationList(title: "By tag", icon: "globe", provider: RadioBrowserProvider(.byTag)),
+        InternetStationList(title: "By name", icon: "globe", provider: RadioBrowserProvider(.byName)),
+        InternetStationList(title: "By country", icon: "globe", provider: RadioBrowserProvider(.byCountry)),
     ]
 
     public var history = History()
@@ -78,15 +79,23 @@ class AppState: ObservableObject {
             }
         }
 
+        // Read iCloud stations ..............................
+        do {
+            var cloudLists = [CloudStationList]()
+            try cloudLists.load()
+            for list in cloudLists {
+                try list.load()
+                localStations.append(list)
+            }
+        } catch {
+            Alarm.show(title: "Sorry, we couldn't load iCloud stations.", message: error.localizedDescription)
+        }
+
         // Read local stations .................................
         debug("Load stations from: \(fileName.path)")
-        let opmlList = OpmlStations(title: "My stations", icon: "music.house", help: nil)
-        opmlList.load(file: fileName, defaultStations: defaultStations)
+        let opmlList = OpmlStations(title: "Local stations", icon: "music.house", file: fileName)
+        opmlList.load(defaultStations: defaultStations)
         localStations.append(opmlList)
-
-        let sharedList = SharedStations(title: "Shared", icon: "music.house")
-        sharedList.load()
-        localStations.append(sharedList)
     }
 
     /* ****************************************
@@ -108,7 +117,7 @@ class AppState: ObservableObject {
 
         if !url.isEmpty {
             for list in localStations {
-                if let res = list.first(byURL: url) {
+                if let res = list.firstStation(byURL: url) {
                     return res
                 }
             }
@@ -135,7 +144,7 @@ class AppState: ObservableObject {
 
         var res: Station?
         for sl in localStations {
-            res = sl.first(byID: byID)
+            res = sl.firstStation(byID: byID)
             if res != nil {
                 return res
             }
@@ -159,7 +168,7 @@ class AppState: ObservableObject {
 
         var res: Station?
         for sl in localStations {
-            res = sl.first(byID: byID)
+            res = sl.firstStation(byID: byID)
             if res != nil {
                 return res
             }
@@ -174,7 +183,7 @@ class AppState: ObservableObject {
     func localStation(byURL: String) -> Station? {
         var res: Station?
         for sl in localStations {
-            res = sl.first(byURL: byURL)
+            res = sl.firstStation(byURL: byURL)
             if res != nil {
                 return res
             }

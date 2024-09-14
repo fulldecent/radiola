@@ -42,18 +42,16 @@ class OpmlStations: StationList {
     let id = UUID()
     var title: String
     var icon: String
-    var help: String?
     var items: [any StationItem] = []
-
-    private(set) var file: URL?
+    let file: URL
 
     /* ****************************************
      *
      * ****************************************/
-    init(title: String, icon: String, help: String? = nil) {
+    init(title: String, icon: String, file: URL) {
+        self.file = file
         self.title = title
         self.icon = icon
-        self.help = help
     }
 
     /* ****************************************
@@ -73,11 +71,9 @@ class OpmlStations: StationList {
     /* ****************************************
      *
      * ****************************************/
-    func load(file: URL, defaultStations: [Station] = []) {
-        self.file = file
-
+    func load(defaultStations: [Station] = []) {
         do {
-            try load(file: file)
+            try load()
         } catch {
             for s in defaultStations {
                 append(s)
@@ -88,9 +84,7 @@ class OpmlStations: StationList {
     /* ****************************************
      *
      * ****************************************/
-    func load(file: URL) throws {
-        self.file = file
-
+    func load() throws {
         if !FileManager().fileExists(atPath: file.path) {
             throw Alarm(title: "Can't read the stations file", message: "File doesn't exist")
         }
@@ -142,7 +136,6 @@ class OpmlStations: StationList {
      * ****************************************/
     func save() {
         do {
-            guard let file = file else { return }
             try saveAsOpml(file: file)
         } catch {
         }

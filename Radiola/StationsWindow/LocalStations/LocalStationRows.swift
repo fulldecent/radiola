@@ -15,7 +15,7 @@ class LocalGroupRow: NSView {
 
     private var nameEdit = TextField()
     private let separator = Separator()
-    let menuButton = MenuButton()
+    let menuButton = StationGroupMenuButton()
 
     /* ****************************************
      *
@@ -23,6 +23,7 @@ class LocalGroupRow: NSView {
     init(group: StationGroup, list: any StationList) {
         self.group = group
         self.list = list
+        menuButton.group = group
 
         super.init(frame: NSRect())
         addSubview(nameEdit)
@@ -53,8 +54,6 @@ class LocalGroupRow: NSView {
         menuButton.heightAnchor.constraint(equalToConstant: 16).isActive = true
 
         separator.alignBottom(of: self)
-
-        menuButton.menu?.addItem(withTitle: "Copy group title", action: #selector(copyTitleToClipboard), keyEquivalent: "").target = self
     }
 
     /* ****************************************
@@ -69,7 +68,7 @@ class LocalGroupRow: NSView {
      * ****************************************/
     @objc func nameEdited(sender: NSTextField) {
         group.title = sender.stringValue
-        list.save()
+        list.trySave()
     }
 
     /* ****************************************
@@ -91,7 +90,7 @@ class LocalStationRow: NSView, NSTextFieldDelegate {
     var nameEdit = TextField()
     var urlEdit = TextField()
     var favoriteButton = ImageButton()
-    let menuButton = MenuButton()
+    let menuButton = StationMenuButton()
     let separator = Separator()
 
     private let contextMenu = NSMenu(title: "Context")
@@ -107,6 +106,7 @@ class LocalStationRow: NSView, NSTextFieldDelegate {
     init(station: Station, list: any StationList) {
         self.station = station
         self.list = list
+        menuButton.station = station
 
         super.init(frame: NSRect())
         addSubview(nameEdit)
@@ -160,9 +160,6 @@ class LocalStationRow: NSView, NSTextFieldDelegate {
         separator.alignBottom(of: self)
 
         refreshFavoriteButton()
-
-        menuButton.menu?.addItem(withTitle: "Copy station title", action: #selector(copyTitleToClipboard), keyEquivalent: "").target = self
-        menuButton.menu?.addItem(withTitle: "Copy station URL", action: #selector(copyUrlToClipboard), keyEquivalent: "").target = self
     }
 
     /* ****************************************
@@ -178,7 +175,7 @@ class LocalStationRow: NSView, NSTextFieldDelegate {
     @objc private func update() {
         station.title = nameEdit.stringValue
         station.url = urlEdit.stringValue
-        list.save()
+        list.trySave()
     }
 
     /* ****************************************
@@ -186,7 +183,7 @@ class LocalStationRow: NSView, NSTextFieldDelegate {
      * ****************************************/
     @objc private func favClicked(sender: NSButton) {
         station.isFavorite = !station.isFavorite
-        list.save()
+        list.trySave()
         refreshFavoriteButton()
     }
 
@@ -204,23 +201,5 @@ class LocalStationRow: NSView, NSTextFieldDelegate {
     func control(_ control: NSControl, textShouldEndEditing fieldEditor: NSText) -> Bool {
         update()
         return true
-    }
-
-    /* ****************************************
-     *
-     * ****************************************/
-    @objc private func copyTitleToClipboard() {
-        let pasteboard = NSPasteboard.general
-        pasteboard.declareTypes([.string], owner: nil)
-        pasteboard.setString(station.title, forType: .string)
-    }
-
-    /* ****************************************
-     *
-     * ****************************************/
-    @objc private func copyUrlToClipboard() {
-        let pasteboard = NSPasteboard.general
-        pasteboard.declareTypes([.string], owner: nil)
-        pasteboard.setString(station.url, forType: .string)
     }
 }

@@ -60,6 +60,7 @@ class StationsWindow: NSWindowController, NSWindowDelegate, NSSplitViewDelegate 
         localStationsDelegate = LocalStationDelegate(outlineView: stationsTree)
         internetStationsDelegate = InternetStationDelegate(outlineView: stationsTree)
 
+        stationsTree.style = .inset
         stationsTree.doubleAction = #selector(doubleClickRow)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(selectionChanged),
@@ -272,6 +273,11 @@ class StationsWindow: NSWindowController, NSWindowDelegate, NSSplitViewDelegate 
         }
 
         if let list = AppState.shared.localStations.find(byId: listId) {
+            do {
+                try list.load()
+            } catch {
+                Alarm.show(loadListErrot: error)
+            }
             setLocalStationList(list: list)
             setFocus(listId: listId, toTree: true)
             updateStateIndicator(state: .notLoaded)
@@ -532,9 +538,9 @@ extension StationsWindow: NSUserInterfaceValidations {
     private func doImportStations(url: URL, list: StationList) {
         guard let window = window else { return }
 
-        let new = OpmlStations(title: "", icon: "")
+        let new = OpmlStations(title: "", icon: "", file: url)
         do {
-            try new.load(file: url)
+            try new.load()
         } catch {
             error.show()
             return
@@ -566,7 +572,7 @@ extension StationsWindow: NSUserInterfaceValidations {
             }
             merger.run()
 
-            list.save()
+            list.trySave()
             self.stationsTree.reloadData()
         })
     }
