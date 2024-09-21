@@ -36,7 +36,7 @@ jobs:
 
       - name: Build
         run: |
-          xcrun agvtool new-version $(echo "${{ github.sha }}" | cut  cut -c-7)
+          xcrun agvtool new-version $(echo "${{ github.sha }}" | cut -c-7)
           xcodebuild clean build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Prepare artifacts
